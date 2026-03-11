@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 OWNER_ID = 1424116164  # Falcon Downloads — private bot
 
-INSTAGRAM_PATTERN = re.compile(r'https?://(www\.)?instagram\.com/(reel|reels|p)/[\w\-]+')
+INSTAGRAM_PATTERN = re.compile(r'https?://(www\.)?instagram\.com/(reel|reels|p)/[\w\-]+[^\s]*')
 YOUTUBE_PATTERN = re.compile(r'https?://(www\.)?(youtube\.com|youtu\.be)/\S+')
 
 def is_supported_link(text: str):
@@ -161,4 +161,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
+        

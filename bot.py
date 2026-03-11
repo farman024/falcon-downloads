@@ -49,7 +49,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     ydl_opts = {
         "outtmpl": output_path,
-        "format": "best[ext=mp4]/best",
+        "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best/bestvideo+bestaudio",
         "quiet": True,
         "no_warnings": True,
         "merge_output_format": "mp4",
@@ -122,4 +122,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
     

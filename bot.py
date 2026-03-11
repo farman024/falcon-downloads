@@ -49,25 +49,23 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     ydl_opts = {
         "outtmpl": output_path,
-        "format": "best[ext=mp4]/best/bestvideo+bestaudio",
+        "format": "best[ext=mp4]/best",
         "quiet": True,
         "no_warnings": True,
         "merge_output_format": "mp4",
         "socket_timeout": 30,
-        "http_headers": {
-            "User-Agent": "Mozilla/5.0 (Linux; Android 12; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36",
-            "Accept-Language": "en-US,en;q=0.9",
-        },
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "web"],
+                "player_client": ["ios"],
             }
         },
     }
 
     # Instagram specific options
     if platform == "instagram":
-        ydl_opts["http_headers"]["User-Agent"] = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15"
+        ydl_opts["http_headers"] = {
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15"
+        }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -123,4 +121,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+        
         

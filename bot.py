@@ -12,7 +12,7 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN")
 OWNER_ID = 1424116164  # Falcon Downloads — private bot
 
 INSTAGRAM_PATTERN = re.compile(r'https?://(www\.)?instagram\.com/(reel|reels|p)/[\w\-]+')
-YOUTUBE_PATTERN = re.compile(r'https?://(www\.)?(youtube\.com/(shorts/|watch\?v=)|youtu\.be/)[\w\-?=&]+')
+YOUTUBE_PATTERN = re.compile(r'https?://(www\.)?(youtube\.com|youtu\.be)/\S+')
 
 def is_supported_link(text: str):
     if INSTAGRAM_PATTERN.search(text):
@@ -115,4 +115,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-        
+    

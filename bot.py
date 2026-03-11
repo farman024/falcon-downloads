@@ -96,7 +96,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logger.error(f"Download error: {e}")
         await status_msg.edit_text(
-            "❌ Failed to download. The video might be private or the link is invalid.\n\nTry again with a different link."
+            f"❌ Error: {str(e)[:200]}"
         )
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -121,5 +121,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-        
         

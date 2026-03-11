@@ -54,7 +54,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "no_warnings": True,
         "merge_output_format": "mp4",
         "socket_timeout": 30,
-        "cookiefile": "cookies.txt",
+        "cookiefile": os.path.join(os.path.dirname(os.path.abspath(__file__)), "cookies.txt"),
         "extractor_args": {
             "youtube": {
                 "player_client": ["ios"],
@@ -122,5 +122,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
     

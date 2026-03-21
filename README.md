@@ -1,6 +1,6 @@
 # 🎬 Personal Video Downloader Bot
 
-Downloads Instagram Reels and YouTube Shorts — no ads, no spam.
+Downloads Instagram Reels and — no ads, no spam.
 
 ## Deploy on Railway (from your phone)
 

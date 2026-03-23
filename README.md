@@ -20,9 +20,8 @@ Downloads Instagram Reels and — no ads, no spam.
 6. Click **Deploy** ✅
 
 ### Step 3 — Test it
-Open your bot on Telegram, send `/start`, then paste any Instagram Reel or YouTube Shorts link!
+Open your bot on Telegram, send `/start`, then paste any Instagram Reel link.
 
 ## Supported Links
 - `https://www.instagram.com/reel/...`
-- `https://www.youtube.com/shorts/...`
-- `https://youtu.be/...`
+

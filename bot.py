@@ -2,8 +2,7 @@ import os
 import re
 import logging
 import yt_dlp
-import instaloader
-from pathlib import Path
+import urllib.request
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
@@ -30,37 +29,80 @@ def extract_url(text: str, platform: str):
         match = YOUTUBE_PATTERN.search(text)
     return match.group(0) if match else None
 
-def extract_shortcode(url: str):
-    match = re.search(r'/(reel|reels|p)/([\w\-]+)', url)
-    return match.group(2) if match else None
-
 async def download_instagram(url: str, output_path: str) -> bool:
-    shortcode = extract_shortcode(url)
-    if not shortcode:
-        return False
+    """Try multiple methods to download Instagram Reel"""
 
-    L = instaloader.Instaloader(
-        download_videos=True,
-        download_video_thumbnails=False,
-        download_geotags=False,
-        download_comments=False,
-        save_metadata=False,
-        quiet=True,
-        dirname_pattern="/tmp/insta_{shortcode}",
-    )
-
+    # Method 1: instaloader
     try:
-        post = instaloader.Post.from_shortcode(L.context, shortcode)
-        if not post.is_video:
-            return False
-
-        # Download directly using video_url
-        import urllib.request
-        urllib.request.urlretrieve(post.video_url, output_path)
-        return True
+        import instaloader
+        match = re.search(r'/(reel|reels|p)/([\w\-]+)', url)
+        if match:
+            shortcode = match.group(2)
+            L = instaloader.Instaloader(
+                download_videos=True,
+                download_video_thumbnails=False,
+                download_geotags=False,
+                download_comments=False,
+                save_metadata=False,
+                quiet=True,
+            )
+            post = instaloader.Post.from_shortcode(L.context, shortcode)
+            if post.is_video:
+                urllib.request.urlretrieve(post.video_url, output_path)
+                if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+                    logger.info("Instaloader success!")
+                    return True
     except Exception as e:
-        logger.error(f"Instaloader error: {e}")
-        return False
+        logger.warning(f"Instaloader failed: {e}")
+
+    # Method 2: yt-dlp with mobile headers
+    try:
+        ydl_opts = {
+            "outtmpl": output_path,
+            "format": "best[ext=mp4]/best",
+            "quiet": True,
+            "no_warnings": True,
+            "socket_timeout": 30,
+            "http_headers": {
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
+                "Accept": "*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Referer": "https://www.instagram.com/",
+            },
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+        if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+            logger.info("yt-dlp success!")
+            return True
+    except Exception as e:
+        logger.warning(f"yt-dlp failed: {e}")
+
+    # Method 3: yt-dlp with Android headers
+    try:
+        ydl_opts = {
+            "outtmpl": output_path,
+            "format": "best",
+            "quiet": True,
+            "no_warnings": True,
+            "socket_timeout": 30,
+            "http_headers": {
+                "User-Agent": "Instagram 269.0.0.18.75 Android (26/8.0.0; 480dpi; 1080x1920; OnePlus; ONEPLUS A3010; OnePlus3T; qcom; en_US; 314665256)",
+                "Accept": "*/*",
+                "Accept-Language": "en-US",
+                "X-IG-App-ID": "936619743392459",
+            },
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+        if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+            logger.info("yt-dlp Android success!")
+            return True
+    except Exception as e:
+        logger.warning(f"yt-dlp Android failed: {e}")
+
+    return False
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != OWNER_ID:
@@ -80,45 +122,23 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_msg = await update.message.reply_text("⏳ Downloading... please wait.")
 
     output_path = f"/tmp/{update.message.message_id}.mp4"
-    success = False
 
     try:
-        if platform == "instagram":
-            success = await download_instagram(url, output_path)
-            if not success:
-                # Fallback to yt-dlp
-                ydl_opts = {
-                    "outtmpl": output_path,
-                    "format": "best[ext=mp4]/best",
-                    "quiet": True,
-                    "no_warnings": True,
-                    "http_headers": {
-                        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15"
-                    },
-                }
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    ydl.download([url])
-                success = True
-        else:
-            ydl_opts = {
-                "outtmpl": output_path,
-                "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
-                "quiet": True,
-                "no_warnings": True,
-                "merge_output_format": "mp4",
-                "socket_timeout": 30,
-                "cookiefile": os.path.join(os.path.dirname(os.path.abspath(__file__)), "cookies.txt"),
-                "extractor_args": {"youtube": {"player_client": ["ios"]}},
-            }
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([url])
-            success = True
+        success = await download_instagram(url, output_path)
 
-        if not os.path.exists(output_path):
+        if not success:
+            # Check if file exists with different extension
             for f in os.listdir("/tmp"):
                 if str(update.message.message_id) in f:
                     output_path = f"/tmp/{f}"
+                    success = True
                     break
+
+        if not success or not os.path.exists(output_path):
+            await status_msg.edit_text(
+                "❌ Failed to download. The video might be private or the link is invalid.\n\nTry again with a different link."
+            )
+            return
 
         await status_msg.edit_text("📤 Uploading video...")
 
@@ -126,7 +146,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_video(
                 video=video_file,
                 supports_streaming=True,
-                caption=f"✅ Downloaded from {'Instagram' if platform == 'instagram' else 'YouTube'}"
+                caption="✅ Downloaded from Instagram"
             )
 
         await status_msg.delete()
@@ -161,4 +181,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-        

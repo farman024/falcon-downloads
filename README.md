@@ -1,6 +1,6 @@
 # 🎬 Personal Video Downloader Bot
 
-Downloads Instagram Reels and — no ads, no spam.
+Downloads Instagram Reels and YouTube Shorts — no ads, no spam.
 
 ## Deploy on Railway (from your phone)
 
@@ -20,8 +20,9 @@ Downloads Instagram Reels and — no ads, no spam.
 6. Click **Deploy** ✅
 
 ### Step 3 — Test it
-Open your bot on Telegram, send `/start`, then paste any Instagram Reel link.
+Open your bot on Telegram, send `/start`, then paste any Instagram Reel or YouTube Shorts link!
 
 ## Supported Links
 - `https://www.instagram.com/reel/...`
-
+- `https://www.youtube.com/shorts/...`
+- `https://youtu.be/...`

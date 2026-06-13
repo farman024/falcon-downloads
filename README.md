@@ -65,7 +65,6 @@ https://www.instagram.com/p/xxxxx/
 - Bot Token stored locally — never in source code
 - Only the owner's Telegram ID can use the bot
 - All downloaded files are deleted immediately after sending
-- GitHub repository is set to Private
 
 ---
 
